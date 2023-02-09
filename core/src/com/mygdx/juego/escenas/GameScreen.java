@@ -19,6 +19,7 @@ import com.mygdx.juego.utils.Pantallas;
 import com.mygdx.juego.utils.Procesador;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 
 public class GameScreen extends ScreenAdapter {
@@ -65,32 +66,75 @@ public class GameScreen extends ScreenAdapter {
 
         //mover con los dedos de la pantalla tactil arriba abajo y lados
         Gdx.input.setInputProcessor(new Procesador() {
+
+            final HashMap<Integer, Integer[]> pointers = new HashMap<>();
+
+//            0 = permite realizar la acción
+//            1 = ya ha realizado la accion y se bloquea el pointer
+
             @Override
             public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+                pointers.put(pointer, new Integer[]{screenX, screenY, 0});
 
-
-                if (screenY>450) {
-                    player.move(Axis.Y, true);
-                    System.out.println("arriba");
-                    System.out.println("toque pantalla:"+screenY);
-                    System.out.println("jugador"+player.getY());
-                }else {
-                    if (screenX>450) {
-                        player.move(Axis.X, true);
-                        System.out.println("derecha");
-                        System.out.println("toque pantalla:"+screenX);
-                        System.out.println("jugador"+player.getX());
-                    }
-                    if (screenX<450) {
-                        player.move(Axis.X, false);
-                        System.out.println("izquierda");
-                        System.out.println("toque pantalla:"+screenX);
-                        System.out.println("jugador"+player.getX());
-                    }
-                }
+//                if (screenY>450) {
+//                    player.move(Axis.Y, true);
+//                    System.out.println("arriba");
+//                    System.out.println("toque pantalla:"+screenY);
+//                    System.out.println("jugador"+player.getY());
+//                }else {
+//                    if (screenX>450) {
+//                        player.move(Axis.X, true);
+//                        System.out.println("derecha");
+//                        System.out.println("toque pantalla:"+screenX);
+//                        System.out.println("jugador"+player.getX());
+//                    }
+//                    if (screenX<450) {
+//                        player.move(Axis.X, false);
+//                        System.out.println("izquierda");
+//                        System.out.println("toque pantalla:"+screenX);
+//                        System.out.println("jugador"+player.getX());
+//                    }
+//                }
 
                 return true;
             }
+
+            @Override
+            public boolean touchUp(int screenX, int screenY, int pointer, int button){
+                pointers.remove(pointer);
+                return true;
+            }
+
+           @Override
+           public boolean touchDragged(int screenX, int screenY, int pointer){
+                try{
+                    if(pointers.get(pointer)[2] == 1) return true;
+                }catch (Exception e){
+                    return false;
+                }
+
+                int prevX = pointers.get(pointer)[0];
+                int prevY = pointers.get(pointer)[1];
+                if((screenY-prevY)<-50 ){
+                    player.move(Axis.Y, true);
+                    System.out.println("Has subido");
+                    pointers.get(pointer)[2] = 1;
+                }else if((screenY-prevY)>50){
+                    player.move(Axis.Y, false);
+                    System.out.println("Has bajado");
+                    pointers.get(pointer)[2] = 1;
+                }else if((screenX-prevX)<-50 ){
+                    player.move(Axis.X, false);
+                    System.out.println("Izquierda");
+                    pointers.get(pointer)[2] = 1;
+                }else if((screenX-prevX)>50){
+                    player.move(Axis.X, true);
+                    System.out.println("Derecha");
+                    pointers.get(pointer)[2] = 1;
+                }
+
+                return true;
+           }
         });
 
 
